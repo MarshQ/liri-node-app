@@ -1,14 +1,14 @@
 
 
 var env= require("dotenv").config('');
-
 var keys = require("./key.js");
 var Twitter = require('twitter');
 var request = require('request');
 var Spotify = require('node-spotify-api');
 var inquirer = require('inquirer');
+var inquirer2 = require('inquirer');
+var inquirer3 = require('inquirer');
 var fs = require('fs')
-//var OMDB = "trilogy";
 
 var spotify = new Spotify({
     id: keys.spotify.id,
@@ -34,22 +34,35 @@ inquirer.prompt([
     switch (user.whatWeDoing) {
         case "tweets":
             tGenerate();
+            break;
         case "spotify":
             sGenerate();
+            break;
         case "movie":
             mGenerate();
+            break;
         case "random":
-        //    fs.readFile(__dirname + "/random.txt", function(err, data) {
-        //     if (error) {
-        //         return console.log(error);
-        //       }
-        //       var dataArr = data.split(",");
-        //    });  
+           //console.log("fudge");
+           rGenerate(); 
+           break;
     }
+
+    // if (user.whatWeDoing == "tweets") {
+    //     tGenerate();
+    // }
+    // else if (user.whatWeDoing == "spotify") {
+    //     sGenerate();
+    // }
+    // else if (user.whatWeDoing == "movie") {
+    //     mGenerate();
+    // }
+    // else if (user.whatWeDoing == "random") {
+    //     rGenerate();
+    // }
 })
 
 function tGenerate() {
-    //console.log("hello");
+    //console.log("hello 1");
     var params = {screen_name: '@MikariaSquirtle'};
     client.get('statuses/user_timeline', params, function(error, tweets, response) {
         if (!error) {
@@ -69,7 +82,7 @@ function tGenerate() {
 
 function sGenerate() {
     //console.log("hello 2");
-    inquirer.prompt([
+    inquirer2.prompt([
         {
             type: "input",
             message: "What song would you like to search for?",
@@ -99,14 +112,14 @@ function sGenerate() {
 
 function mGenerate() {
     //console.log("hello 3");
-    inquirer.prompt([
+    inquirer3.prompt([
         {
             type: "input",
             message: "What movie would you like to search for?",
             name: "movieTitle"
         }
     ]).then(function(user) {
-        //console.log(user.movieTitle);
+        console.log(user.movieTitle);
         var alpha = user.movieTitle;
         if (alpha == "") {
             alpha = "Mr. Nobody";
@@ -129,3 +142,58 @@ function mGenerate() {
 
     });
 }
+
+function rGenerate() {
+    //console.log("hello 4");
+    fs.readFile("random.txt", "utf8", function(err, data) {
+        if (err) {
+            return console.log(err);
+        }
+        console.log(data);
+        var info = data.split(",");
+        var mission = info[0];
+        var reward = info[1];
+        console.log(mission);
+        console.log(reward);
+
+        switch (mission) {
+            case "my-tweets":
+                tGenerate();
+                break;
+            case "spotify-this-song":
+                spotify.search({ type: 'track', query: reward }, function(err, data) {
+                
+                if (err) {
+                return console.log('Error occurred: ' + err);
+                };
+                console.log('Title: ' + data.tracks.items[0].name);
+                console.log('Artist: ' + data.tracks.items[0].artists[0].name);
+                console.log('Album: ' + data.tracks.items[0].album.name);
+                console.log('Preview link: ' + data.tracks.items[0].preview_url);
+            }); 
+                break;
+            case "movie-this":
+                var queryURL = "https://www.omdbapi.com/?t=" + reward + "&y=&plot=short&apikey=trilogy";
+                request(queryURL, function (error, status, response) {
+                console.log('error:', error); 
+                //console.log('statusCode:', status && status.statusCode); 
+                //console.log(response);
+                pieces = JSON.parse(response);
+                console.log(pieces.Title); 
+                console.log(pieces.Year); 
+                console.log(pieces.Actors); 
+                console.log(pieces.Country); 
+                console.log(pieces.Language); 
+                console.log(pieces.Ratings[0].Source + " " + pieces.Ratings[0].Value); 
+                console.log(pieces.Ratings[1].Source + " " + pieces.Ratings[1].Value); 
+                console.log(pieces.Plot);
+                
+            });
+            break;  
+        };
+    
+   }); 
+};
+ 
+
+  
